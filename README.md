@@ -1,10 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Olimpiade FST 2026 - UNPATTI</title>
+    <!-- html2canvas untuk download kartu sebagai gambar -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,7 +14,6 @@
             font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
         }
 
-        /* LATAR PUTIH POLOS - PERSIS SEPERTI GAMBAR */
         body {
             background: #ffffff;
             padding: 40px 20px;
@@ -172,14 +172,14 @@
             margin-bottom: 12px;
         }
 
-        .auth-buttons {
+        .navbar {
             display: flex;
-            gap: 20px;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
         }
 
-        .login-btn, .logout-btn {
+        .login-btn {
             background: #2c5a7a;
             border: none;
             padding: 10px 24px;
@@ -194,31 +194,13 @@
             background: #1e3f58;
         }
 
-        .logout-btn {
-            background: #6c757d;
-        }
-
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .user-greeting {
-            background: #f0f0f0;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-weight: 500;
-        }
-
         footer {
             text-align: center;
             margin-top: 50px;
             color: #5a6e7c;
         }
 
-        /* Modal styles */
+        /* MODAL FORM & LOGIN */
         .modal {
             display: none;
             position: fixed;
@@ -232,7 +214,7 @@
 
         .modal-content {
             background: white;
-            max-width: 500px;
+            max-width: 550px;
             width: 90%;
             border-radius: 32px;
             padding: 30px;
@@ -281,16 +263,69 @@
             cursor: pointer;
         }
 
-        .success-card {
-            background: #e3f7ec;
-            padding: 20px;
+        /* Kartu Peserta */
+        .kartu-peserta {
+            background: linear-gradient(135deg, #fff9e6, #ffffff);
+            border: 2px solid #ff9800;
             border-radius: 24px;
-            margin-top: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .kartu-header {
+            border-bottom: 2px dashed #ff9800;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
             text-align: center;
         }
 
-        hr {
-            margin: 20px 0;
+        .kartu-header h3 {
+            color: #0a2b3e;
+            font-size: 1.5rem;
+        }
+
+        .kartu-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .kartu-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .kartu-label {
+            font-weight: 700;
+            color: #1e4663;
+        }
+
+        .kartu-value {
+            color: #2c3e4e;
+        }
+
+        .download-btn {
+            background: #2c5a7a;
+            margin-top: 15px;
+        }
+
+        .success-msg {
+            background: #e3f7ec;
+            padding: 15px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
     </style>
 </head>
@@ -300,7 +335,6 @@
         <div style="font-weight: bold; font-size: 1.3rem;">🏆 Olimpiade FST</div>
         <div>
             <button class="login-btn" id="openLoginBtn">🔐 Login</button>
-            <button class="logout-btn" id="logoutBtn" style="display:none;">🚪 Logout</button>
         </div>
     </div>
 
@@ -337,11 +371,348 @@
     <footer>© Fakultas Sains & Teknologi UNPATTI - Olimpiade FST 2026</footer>
 </div>
 
-<!-- Modal Daftar, Login, Dashboard (sama seperti kode sebelumnya) -->
+<!-- MODAL DAFTAR -->
+<div id="registerModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeRegisterModal">&times;</span>
+        <h2>📝 Formulir Pendaftaran</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="regName" required placeholder="Nama lengkap">
+            </div>
+            <div class="row-2">
+                <div class="form-group">
+                    <label>Tanggal Lahir</label>
+                    <input type="date" id="regTglLahir" required>
+                </div>
+                <div class="form-group">
+                    <label>Asal Sekolah</label>
+                    <input type="text" id="regAsalSekolah" required placeholder="Kota/Kabupaten">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Jenjang Sekolah</label>
+                <select id="regJenjang" required>
+                    <option value="">Pilih Jenjang</option>
+                    <option value="SD">SD</option>
+                    <option value="SMP">SMP</option>
+                    <option value="SMA">SMA</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Mata Lomba (otomatis sesuai jenjang)</label>
+                <select id="regMataLomba" required disabled>
+                    <option value="">Pilih jenjang terlebih dahulu</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nama Sekolah</label>
+                <input type="text" id="regNamaSekolah" required placeholder="Nama lengkap sekolah">
+            </div>
+            <div class="form-group">
+                <label>Nomor HP / WhatsApp</label>
+                <input type="tel" id="regPhone" required placeholder="08xxxxxxxxxx">
+            </div>
+            <button type="submit">✨ Daftar Sekarang ✨</button>
+        </form>
+        <div id="registerResult"></div>
+    </div>
+</div>
+
+<!-- MODAL LOGIN -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeLoginModal">&times;</span>
+        <h2>🔑 Login Peserta</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Nomor Pendaftar</label>
+                <input type="text" id="loginNoPeserta" required placeholder="Contoh: FST-2604-1234">
+            </div>
+            <div class="form-group">
+                <label>Nomor HP (saat daftar)</label>
+                <input type="tel" id="loginPhone" required placeholder="08xxxxxxxxxx">
+            </div>
+            <button type="submit">🔓 Login</button>
+        </form>
+        <div id="loginResult"></div>
+    </div>
+</div>
+
+<!-- MODAL KARTU PESERTA (setelah daftar sukses) -->
+<div id="kartuModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <span class="close-modal" id="closeKartuModal">&times;</span>
+        <div id="kartuContainer">
+            <!-- Kartu akan diisi JS -->
+        </div>
+    </div>
+</div>
+
 <script>
-    // [Sisipkan kode JavaScript yang sama dari jawaban sebelumnya di sini]
-    // Karena batasan karakter, saya tulis intinya. Kirim ulang jika perlu full.
-    alert("Kode berjalan! Untuk JavaScript lengkap, silakan minta saya kirim ulang dengan semua fungsi pendaftaran.");
+    // Data mata lomba berdasarkan jenjang
+    const lombaByJenjang = {
+        SD: [
+            "Matematika SD (Berhitung, Logika Dasar)",
+            "IPA SD (Eksperimen Sederhana)",
+            "Bahasa Inggris SD"
+        ],
+        SMP: [
+            "Matematika SMP (Aljabar, Geometri)",
+            "Fisika SMP (Mekanika Dasar)",
+            "Biologi SMP (Ekologi, Anatomi Dasar)",
+            "Kimia SMP (Asam Basa, Reaksi Sederhana)"
+        ],
+        SMA: [
+            "Matematika SMA (Kalkulus, Trigonometri)",
+            "Fisika SMA (Mekanika Lanjut, Listrik)",
+            "Kimia SMA (Termokimia, Stoikiometri)",
+            "Biologi SMA (Genetika, Biologi Molekuler)",
+            "Informatika / IT (Pemrograman Dasar, Jaringan)"
+        ]
+    };
+
+    // Generate nomor peserta & ruangan (contoh: 1/rk10-lt3)
+    function generateNomorPeserta() {
+        let randomNum = Math.floor(Math.random() * 9000) + 1000;
+        let now = new Date();
+        let year = now.getFullYear().toString().slice(-2);
+        let month = (now.getMonth()+1).toString().padStart(2,'0');
+        return `FST-${year}${month}-${randomNum}`;
+    }
+
+    function generateRuangLomba() {
+        const ruanganList = ["1/rk10-lt3", "2/rk08-lt2", "3/rk12-lt1", "4/labkom-lt2", "5/auditorium"];
+        return ruanganList[Math.floor(Math.random() * ruanganList.length)];
+    }
+
+    // Simpan ke localStorage
+    let participants = JSON.parse(localStorage.getItem('olimpiade_peserta')) || [];
+
+    function saveParticipant(data) {
+        const exists = participants.find(p => p.phone === data.phone);
+        if(exists) return { success: false, message: "❌ Nomor HP sudah terdaftar! Silakan login." };
+        
+        const noPeserta = generateNomorPeserta();
+        const ruangLomba = generateRuangLomba();
+        
+        const newParticipant = {
+            ...data,
+            noPeserta: noPeserta,
+            ruangLomba: ruangLomba,
+            tanggalDaftar: new Date().toLocaleString('id-ID')
+        };
+        participants.push(newParticipant);
+        localStorage.setItem('olimpiade_peserta', JSON.stringify(participants));
+        return { success: true, noPeserta, ruangLomba, nama: data.nama, jenjang: data.jenjang, namaSekolah: data.namaSekolah, mataLomba: data.mataLomba };
+    }
+
+    // Update dropdown mata lomba
+    const jenjangSelect = document.getElementById('regJenjang');
+    const mataLombaSelect = document.getElementById('regMataLomba');
+    
+    jenjangSelect.addEventListener('change', function() {
+        const jenjang = this.value;
+        mataLombaSelect.innerHTML = '';
+        if (jenjang === '') {
+            mataLombaSelect.disabled = true;
+            mataLombaSelect.innerHTML = '<option value="">Pilih jenjang terlebih dahulu</option>';
+            return;
+        }
+        mataLombaSelect.disabled = false;
+        const lombaList = lombaByJenjang[jenjang];
+        lombaList.forEach(lomba => {
+            const option = document.createElement('option');
+            option.value = lomba;
+            option.textContent = lomba;
+            mataLombaSelect.appendChild(option);
+        });
+    });
+
+    // Tampilkan kartu peserta yang bisa di-download
+    function showKartuPeserta(data) {
+        const kartuHtml = `
+            <div class="success-msg">
+                🎉 Terima kasih telah mendaftar! 🎉
+            </div>
+            <div id="kartuDownloadArea" class="kartu-peserta">
+                <div class="kartu-header">
+                    <h3>🏅 KARTU PESERTA</h3>
+                    <p>Olimpiade FST 2026 - UNPATTI</p>
+                </div>
+                <div class="kartu-body">
+                    <div class="kartu-row">
+                        <span class="kartu-label">Nama Peserta:</span>
+                        <span class="kartu-value">${data.nama}</span>
+                    </div>
+                    <div class="kartu-row">
+                        <span class="kartu-label">Jenjang:</span>
+                        <span class="kartu-value">${data.jenjang}</span>
+                    </div>
+                    <div class="kartu-row">
+                        <span class="kartu-label">Nama Sekolah:</span>
+                        <span class="kartu-value">${data.namaSekolah}</span>
+                    </div>
+                    <div class="kartu-row">
+                        <span class="kartu-label">Nomor Peserta:</span>
+                        <span class="kartu-value"><strong>${data.noPeserta}</strong></span>
+                    </div>
+                    <div class="kartu-row">
+                        <span class="kartu-label">Ruang Lomba:</span>
+                        <span class="kartu-value"><strong>${data.ruangLomba}</strong></span>
+                    </div>
+                    <div class="kartu-row">
+                        <span class="kartu-label">Mata Lomba:</span>
+                        <span class="kartu-value">${data.mataLomba}</span>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px; font-size: 12px; color: gray;">
+                    Simpan kartu ini sebagai bukti pendaftaran
+                </div>
+            </div>
+            <button id="downloadKartuBtn" class="download-btn" style="background:#ff9800; width:100%;">📥 Download Kartu Peserta (PNG)</button>
+        `;
+        document.getElementById('kartuContainer').innerHTML = kartuHtml;
+        document.getElementById('kartuModal').style.display = 'flex';
+        
+        // Event download
+        setTimeout(() => {
+            const downloadBtn = document.getElementById('downloadKartuBtn');
+            if(downloadBtn) {
+                downloadBtn.addEventListener('click', function() {
+                    const element = document.getElementById('kartuDownloadArea');
+                    html2canvas(element, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.download = `kartu_peserta_${data.noPeserta}.png`;
+                        link.href = canvas.toDataURL();
+                        link.click();
+                    }).catch(err => {
+                        alert("Gagal download, coba screenshot manual.");
+                    });
+                });
+            }
+        }, 100);
+    }
+
+    // Login logic
+    function loginUser(noPeserta, phone) {
+        const user = participants.find(p => p.noPeserta === noPeserta && p.phone === phone);
+        if(user) {
+            return { success: true, user };
+        }
+        return { success: false, message: "❌ Nomor pendaftar atau HP tidak cocok." };
+    }
+
+    // Modal elements
+    const registerModal = document.getElementById('registerModal');
+    const loginModal = document.getElementById('loginModal');
+    const kartuModal = document.getElementById('kartuModal');
+
+    function closeAllModals() {
+        registerModal.style.display = 'none';
+        loginModal.style.display = 'none';
+        kartuModal.style.display = 'none';
+    }
+
+    document.getElementById('daftarUtamaBtn').addEventListener('click', () => {
+        registerModal.style.display = 'flex';
+        document.getElementById('registerResult').innerHTML = '';
+        document.getElementById('registerForm').reset();
+        mataLombaSelect.disabled = true;
+        mataLombaSelect.innerHTML = '<option value="">Pilih jenjang terlebih dahulu</option>';
+    });
+
+    document.getElementById('openLoginBtn').addEventListener('click', () => {
+        loginModal.style.display = 'flex';
+        document.getElementById('loginResult').innerHTML = '';
+        document.getElementById('loginForm').reset();
+    });
+
+    document.getElementById('closeRegisterModal').onclick = () => registerModal.style.display = 'none';
+    document.getElementById('closeLoginModal').onclick = () => loginModal.style.display = 'none';
+    document.getElementById('closeKartuModal').onclick = () => kartuModal.style.display = 'none';
+    window.onclick = (e) => {
+        if(e.target === registerModal) registerModal.style.display = 'none';
+        if(e.target === loginModal) loginModal.style.display = 'none';
+        if(e.target === kartuModal) kartuModal.style.display = 'none';
+    };
+
+    // Register form submit
+    document.getElementById('registerForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nama = document.getElementById('regName').value.trim();
+        const tglLahir = document.getElementById('regTglLahir').value;
+        const asalSekolah = document.getElementById('regAsalSekolah').value.trim();
+        const jenjang = document.getElementById('regJenjang').value;
+        const mataLomba = document.getElementById('regMataLomba').value;
+        const namaSekolah = document.getElementById('regNamaSekolah').value.trim();
+        const phone = document.getElementById('regPhone').value.trim();
+
+        if(!nama || !tglLahir || !asalSekolah || !jenjang || !mataLomba || !namaSekolah || !phone) {
+            document.getElementById('registerResult').innerHTML = '<p style="color:red;">Semua field harus diisi!</p>';
+            return;
+        }
+        if(!/^08\d{8,12}$/.test(phone)) {
+            document.getElementById('registerResult').innerHTML = '<p style="color:red;">Nomor HP harus dimulai 08 dan minimal 10 digit</p>';
+            return;
+        }
+
+        const result = saveParticipant({ nama, tglLahir, asalSekolah, jenjang, mataLomba, namaSekolah, phone });
+        if(result.success) {
+            registerModal.style.display = 'none';
+            showKartuPeserta({
+                nama: result.nama,
+                jenjang: result.jenjang,
+                namaSekolah: result.namaSekolah,
+                noPeserta: result.noPeserta,
+                ruangLomba: result.ruangLomba,
+                mataLomba: result.mataLomba
+            });
+            document.getElementById('registerForm').reset();
+        } else {
+            document.getElementById('registerResult').innerHTML = `<p style="color:red;">${result.message}</p>`;
+        }
+    });
+
+    // Login submit
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const noPeserta = document.getElementById('loginNoPeserta').value.trim();
+        const phone = document.getElementById('loginPhone').value.trim();
+        const result = loginUser(noPeserta, phone);
+        if(result.success) {
+            const user = result.user;
+            loginModal.style.display = 'none';
+            showKartuPeserta({
+                nama: user.nama,
+                jenjang: user.jenjang,
+                namaSekolah: user.namaSekolah,
+                noPeserta: user.noPeserta,
+                ruangLomba: user.ruangLomba,
+                mataLomba: user.mataLomba
+            });
+        } else {
+            document.getElementById('loginResult').innerHTML = `<p style="color:red;">${result.message}</p>`;
+        }
+    });
+
+    // Countdown Timer
+    function updateCountdown() {
+        const targetDate = new Date(2026, 4, 15, 0, 0, 0);
+        const now = new Date();
+        const diff = targetDate - now;
+        if(diff <= 0) {
+            document.getElementById('countdownTimer').innerHTML = "0 Hari : 0 Jam : 0 Menit";
+            return;
+        }
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (86400000)) / (3600000));
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        document.getElementById('countdownTimer').innerHTML = `${days} Hari : ${hours} Jam : ${minutes} Menit`;
+    }
+    setInterval(updateCountdown, 60000);
+    updateCountdown();
 </script>
 </body>
 </html>
